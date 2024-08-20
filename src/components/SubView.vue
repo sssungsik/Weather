@@ -2,7 +2,7 @@
     <div class="rightContainer">
         <div id="cityNameBox">
             <div class="cityName">
-                <p>전라북도 순창군</p>
+                <p>{{ cityName }}</p>
                 <p>08월 20일</p>
             </div>
         </div>

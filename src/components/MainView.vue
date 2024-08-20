@@ -2,8 +2,8 @@
     <div class="leftContainer">
         <div id="cityNameBox">
             <div class="cityName">
-                <p>전라북도 순창군</p>
-                <p>08월 20일</p>
+                <p>{{ cityName}}</p>
+                <p>{{ currentTime }}</p>
             </div>
         </div>
         <div id="contentsBox">
@@ -15,36 +15,38 @@
             </div>
             <div class="weatherBox">
                 <div class="weatherDegree">
-                    <p>32&deg;</p>
+                    <p>{{ Math.round(currnetTemp)}}&deg;</p>
                 </div>
                 <div class="weatherIcon">
                     <img src="../assets/img/sun.png" alt="MainLogo">
                 </div>
                 <div class="weatherData">
-                    <div v-for="Temporary in TemporaryData" :key="Temporary.titie" class="detailData">
-                        <p>{{ Temporary.titie }}</p>
-                        <p>{{ Temporary.value }}</p>
+                    <div v-for="temporary in temporaryData" :key="temporary.titie" class="detailData">
+                        <p>{{ temporary.titie }}</p>
+                        <p>{{ temporary.value }}</p>
                     </div>
                 </div>
             </div>
 
         </div>
+
         <div id="todayWeather">
             <div class="textBox">
                 <p>시간대별 날씨 정보</p>
                 <P>이번 주 날씨 보기</P>
             </div>
             <div class="timelyWeatherBox">
-                <div class="timelyWeather">
+                <div class="timelyWeather" v-for="(temp, index) in arrayTemps" :key="index">
                     <div class="icon">
                         <img src="" alt="">
                     </div>
                     <div class="data">
-                        <p class="time">2pm</p>
-                        <p class="currentDegree">32&deg;</p>
+                        <p class="time">{{formatDate(temp.dt_txt) }}</p>
+                        <p class="currentDegree">{{Math.round(temp.main.temp)}}&deg;</p>
                         <div>
                             <img src="" alt="">
-                            <p class="fall">15%</p>
+                            <p class="fall">{{temp.weather[0].description}}</p>
+                 
                         </div>
                     </div>
                 </div>
@@ -60,11 +62,26 @@
 </template>
 
 <script>
+import axios from "axios";
+import dayjs from "dayjs";
+import "dayjs/locale/ko";
+dayjs.locale("ko");
 export default {
     data() {
         return {
+            // 현재 시간 출력 dayjs 플러그인
+            currentTime : dayjs().format("YYYY. MM. DD. ddd"),
+            // 현재 온도
+            currnetTemp : "",
+            arrayTemps : [],
+            
+            // 상세 날씨 데이터 
+            temps:[],
+            icons:[],
+            cityName:"",
+
             // 임시 데이터
-            TemporaryData:[
+            temporaryData:[
                 {
                     titie:"습도",
                     value:"88%",
@@ -74,12 +91,59 @@ export default {
                     value:"10m/s",
                 },
                 {
-                    titie:"풍량",
+                    titie:"체감온도",
                     value:"WS",
                 },
             ]
         }
+    },
+    methods: {
+    formatDate(value) {
+      const date = new Date(value);
+      const month = date.getMonth() + 1;
+      const day = date.getDate();
+      const hours = date.getHours();
+      return `${month}. ${day} ${hours}시`;
     }
+  },
+    created() {
+        const API_KEY = "af8c41e25c969684fe185616913d4a3d";
+        let initialLat = 37.4843343;
+        let initialLon = 126.929324;
+
+        axios
+        .get(`https://api.openweathermap.org/data/2.5/weather?lat=${initialLat}&lon=${initialLon}&lang=kr&units=metric&appid=${API_KEY}`)
+        .then(response => {
+            console.log(response);
+            this.cityName = response.data.name;
+            this.currnetTemp = response.data.main.temp;
+            this.temporaryData[0].value = response.data.main.humidity + "%";
+            this.temporaryData[1].value = response.data.wind.speed + "m/s";
+            this.temporaryData[2].value = Math.round(response.data.main.feels_like) + "도";
+            
+        })
+        .catch(error => {
+            console.log(error);
+            
+        })
+
+        axios
+        .get(`https://api.openweathermap.org/data/2.5/forecast?lat=${initialLat}&lon=${initialLon}&lang=kr&units=metric&appid=${API_KEY}`)
+        .then(response => {
+            console.log(response);
+            for (let i = 0; i <= 30; i ++) {
+                this.arrayTemps[i] = response.data.list[i];
+            }
+            console.log(this.arrayTemps);
+            
+        })
+        .catch(error => {
+            console.log(error);
+            
+        })
+    },
+
+
 };
 </script>
 
@@ -254,12 +318,25 @@ export default {
             width: calc(100% - 70px);
             height: 65%;
             padding: 0 30px;
+            overflow: scroll;
+
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+            &::-webkit-scrollbar {
+                display: none;
+            }
             .timelyWeather {
                 display: flex;
                 width: 126px;
+                min-width: 126px;
                 height: 70px;
                 background-color: #0889ff;
                 border-radius: 20px;
+                margin-left: 15px;
+                &:first-child {
+                    margin-left: 0;
+                }
+
                 .icon {
                     @include center;
                     width: 45%;

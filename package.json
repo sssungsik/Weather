@@ -8,8 +8,8 @@
     "last 2 versions"
   ],
   "scripts": {
- "dev": "cross-env NODE_OPTIONS=--openssl-legacy-provider webpack-dev-server --mode development",
-  "build": "cross-env NODE_OPTIONS=--openssl-legacy-provider webpack --mode production"
+    "dev": "cross-env NODE_OPTIONS=--openssl-legacy-provider webpack-dev-server --mode development",
+    "build": "cross-env NODE_OPTIONS=--openssl-legacy-provider webpack --mode production"
   },
   "keywords": [],
   "author": "",
@@ -42,13 +42,15 @@
   },
   "dependencies": {
     "16": "^0.0.2",
+    "axios": "^1.7.4",
     "bootstrap-icons": "^1.11.3",
+    "dayjs": "^1.11.12",
     "vue": "^3.2.14",
     "vue-router": "^4.4.3"
   },
   "eslintConfig": {
-  "globals": {
-    "kakao": false
+    "globals": {
+      "kakao": false
+    }
   }
-}
 }
