@@ -1,22 +1,26 @@
 <template>
     <div class="leftContainer">
+       
         <div id="cityNameBox">
             <div class="cityName">
                 <p>{{ cityName}}</p>
                 <p>{{ currentTime }}</p>
             </div>
         </div>
+        
         <div id="contentsBox">
             <div class="buttonBox">
                 <div class="buttonBackground">
-                    <button class="forecast">Forecast</button>
+                    <button class="forecast">날씨</button>
                     <button class="airquality">Air Quality</button>
                 </div>
             </div>
             <div class="weatherBox">
                 <div class="weatherDegree">
                     <p>{{ Math.round(currnetTemp)}}&deg;</p>
+                    <p>{{ currentWeather}}</p>
                 </div>
+                <div></div>
                 <div class="weatherIcon">
                     <img src="../assets/img/sun.png" alt="MainLogo">
                 </div>
@@ -52,6 +56,8 @@
                 </div>
             </div>
         </div>
+      
+       
         <nav>
             <i class="bi bi-house"></i>
             <i class="bi bi-search"></i>
@@ -108,7 +114,7 @@ export default {
   },
     created() {
         const API_KEY = "af8c41e25c969684fe185616913d4a3d";
-        let initialLat = 37.4843343;
+        let initialLat = 37.5843343;
         let initialLon = 126.929324;
 
         axios
@@ -117,6 +123,7 @@ export default {
             console.log(response);
             this.cityName = response.data.name;
             this.currnetTemp = response.data.main.temp;
+            this.currentWeather = response.data.weather[0].description;
             this.temporaryData[0].value = response.data.main.humidity + "%";
             this.temporaryData[1].value = response.data.wind.speed + "m/s";
             this.temporaryData[2].value = Math.round(response.data.main.feels_like) + "도";
@@ -156,6 +163,7 @@ export default {
     border-radius: 50px;
     background: linear-gradient(#16455f, #0e1239 );
     box-shadow: 5px 5px 10px gray;
+    
 
     #cityNameBox {
         width: 100%;
@@ -230,11 +238,18 @@ export default {
                 @include center;
                 width: 100%;
                 height: 15%;
+                flex-direction: column;
                 p {
                     font-size: 3.5rem;
                     font-weight: 500;
                     font-family: "Be Vietnam Pro", sans-serif;
                     color: white;
+                    &:first-child {
+                        margin-bottom: 9px;
+                    }
+                    &:last-child {
+                        font-size: 0.9rem;
+                    }
                 }
             }
             .weatherIcon {
@@ -287,7 +302,7 @@ export default {
             }
         }
     }
-
+  
     #todayWeather {
         width: 100%;
         height: 17.5%;
