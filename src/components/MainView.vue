@@ -18,7 +18,7 @@
                     <p>32&deg;</p>
                 </div>
                 <div class="weatherIcon">
-                    <img src="/src/assets/img/sun.png" alt="MainLogo">
+                    <img src="../assets/img/sun.png" alt="MainLogo">
                 </div>
                 <div class="weatherData">
                     <div v-for="Temporary in TemporaryData" :key="Temporary.titie" class="detailData">
