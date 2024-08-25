@@ -3,7 +3,6 @@
     <div class="container">
       <MainView />
       <SubView />
-
     </div>
    </div>
   </template>
@@ -32,4 +31,17 @@
       max-height: 1354px;
     }
   }
+
+
+@media screen and (max-width:768px) {
+ .wrap {
+  display: block;
+  .container {
+   display: block;
+  }
+
+
+ }
+} 
+
   </style>
