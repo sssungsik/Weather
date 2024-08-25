@@ -12,21 +12,21 @@
             <div class="buttonBox">
                 <div class="buttonBackground">
                     <button class="forecast">날씨</button>
-                    <button class="airquality">Air Quality</button>
+                    <button class="airquality">정보</button>
                 </div>
             </div>
             <div class="weatherBox">
                 <div class="weatherDegree">
-                    <p>{{ Math.round(currnetTemp)}}&deg;</p>
-                    <p>{{ currentWeather}}</p>
+                    <p>{{ Math.round(currentTemp)}}&deg;</p>
+                    <p>{{ currentWeatherDescription}}</p>
                 </div>
                 <div></div>
                 <div class="weatherIcon">
-                    <img src="../assets/img/sun.png" alt="MainLogo">
+                    <img :src="images[0]" alt="MainLogo">
                 </div>
                 <div class="weatherData">
                     <div v-for="temporary in temporaryData" :key="temporary.titie" class="detailData">
-                        <p>{{ temporary.titie }}</p>
+                        <p>{{ temporary.title }}</p>
                         <p>{{ temporary.value }}</p>
                     </div>
                 </div>
@@ -36,20 +36,20 @@
 
         <div id="todayWeather">
             <div class="textBox">
-                <p>시간대별 날씨 정보</p>
-                <P>이번 주 날씨 보기</P>
+                <p>시간대별 일기예보</p>
+                <P>3시간 기준</P>
             </div>
             <div class="timelyWeatherBox">
                 <div class="timelyWeather" v-for="(temp, index) in arrayTemps" :key="index">
                     <div class="icon">
-                        <img src="" alt="">
+                        <img :src="images[index]" :alt="`${index}`">
                     </div>
                     <div class="data">
                         <p class="time">{{formatDate(temp.dt_txt) }}</p>
                         <p class="currentDegree">{{Math.round(temp.main.temp)}}&deg;</p>
                         <div>
-                            <img src="" alt="">
-                            <p class="fall">{{temp.weather[0].description}}</p>
+                            
+                            <p class="fall">{{ getWeatherDescription(temp.weather[0].description) }}</p>
                  
                         </div>
                     </div>
@@ -77,91 +77,84 @@ export default {
         return {
             // 현재 시간 출력 dayjs 플러그인
             currentTime : dayjs().format("YYYY. MM. DD. ddd"),
-            // 현재 온도
-            currnetTemp : "",
-            arrayTemps : [],
-            
-            // 상세 날씨 데이터 
-            temps:[],
-            icons:[],
-            cityName:"",
-
-            // 임시 데이터
-            temporaryData:[
-                {
-                    titie:"습도",
-                    value:"88%",
-                },
-                {
-                    titie:"풍속",
-                    value:"10m/s",
-                },
-                {
-                    titie:"체감온도",
-                    value:"WS",
-                },
-            ]
+          
         }
     },
+    async created() {
+        await this.$store.dispatch('openWeatherApi/FETCH_OPENWEATHER_API');
+        const { currentTemp, currentHumidity, currentWindSpeed, currentFeelsLike, currentWeatherDescription } = this.$store.state.openWeatherApi.currentWeather;
+
+        this.currentTemp = currentTemp; // 현재시간에 대한 현재온도
+        this.temporaryData[0].value = currentHumidity + '%'; // 현재시간에 대한 습도
+        this.temporaryData[1].value = currentWindSpeed + 'm/s'; // 현재시간에 대한 풍속
+        this.temporaryData[2].value = Math.round(currentFeelsLike) + '도'; // 현재시간에 대한 체감온도
+        this.arrayTemps = this.$store.state.openWeatherApi.hourlyWeather;
+        this.images = this.$store.state.openWeatherApi.imagePath;
+        this.currentWeatherDescription = currentWeatherDescription;
+    },
     methods: {
+    getWeatherDescription(description) {
+      // "약간의 구름이 낀 하늘"을 "구름"으로 변환
+      return description === '약간의 구름이 낀 하늘' ? '구름' : description;
+    },
     formatDate(value) {
       const date = new Date(value);
       const month = date.getMonth() + 1;
       const day = date.getDate();
       const hours = date.getHours();
       return `${month}. ${day} ${hours}시`;
-    }
-  },
-    created() {
-        const API_KEY = "af8c41e25c969684fe185616913d4a3d";
-        let initialLat = 37.5843343;
-        let initialLon = 126.929324;
-
-        axios
-        .get(`https://api.openweathermap.org/data/2.5/weather?lat=${initialLat}&lon=${initialLon}&lang=kr&units=metric&appid=${API_KEY}`)
-        .then(response => {
-            console.log(response);
-            this.cityName = response.data.name;
-            this.currnetTemp = response.data.main.temp;
-            this.currentWeather = response.data.weather[0].description;
-            this.temporaryData[0].value = response.data.main.humidity + "%";
-            this.temporaryData[1].value = response.data.wind.speed + "m/s";
-            this.temporaryData[2].value = Math.round(response.data.main.feels_like) + "도";
-            
-        })
-        .catch(error => {
-            console.log(error);
-            
-        })
-
-        axios
-        .get(`https://api.openweathermap.org/data/2.5/forecast?lat=${initialLat}&lon=${initialLon}&lang=kr&units=metric&appid=${API_KEY}`)
-        .then(response => {
-            console.log(response);
-            for (let i = 0; i <= 30; i ++) {
-                this.arrayTemps[i] = response.data.list[i];
-            }
-            console.log(this.arrayTemps);
-            
-        })
-        .catch(error => {
-            console.log(error);
-            
-        })
+        }
     },
+    computed: {
+        cityName() {
+            return this.$store.state.openWeatherApi.cityName;
+        },
+        currentTemp() {
+            const { currentTemp } = this.$store.state.openWeatherApi.currentWeather;
+            return currentTemp;
+        },
+        currentWeatherDescription() {
+            const { currentWeatherDescription } = this.$store.state.openWeatherApi.currentWeather;
+            return currentWeatherDescription;
+        },
+        arrayTemps() {
+            return this.$store.state.openWeatherApi.hourlyWeather;
 
-
+        },
+        temporaryData() {
+            const { currentHumidity, currentWindSpeed, currentFeelsLike } = this.$store.state.openWeatherApi.currentWeather;
+            return [
+                {
+                    title: "습도",
+                    value: currentHumidity + "%",
+                },
+                {
+                    title: "풍속",
+                    value: currentWindSpeed + "m/s",
+                },
+                {
+                    title: "체감온도",
+                    value: Math.round(currentFeelsLike) + "도",
+                },
+            ];
+        },
+        images() {
+            return this.$store.state.openWeatherApi.images;
+        },
+    },
 };
 </script>
 
 <style lang="scss" scoped>
 @import "../scss/main.scss";
 
+
 .leftContainer {
     width: 324px;
+    min-width: 324px;
     height: 700px;
     border-radius: 50px;
-    background: linear-gradient(#16455f, #0e1239 );
+    background: linear-gradient(#16455f, #0e1239);
     box-shadow: 5px 5px 10px gray;
     
 
@@ -176,7 +169,7 @@ export default {
 
             p {
                 color: white;
-                font-family: "Poppins", sans-serif;
+                font-family: 'Pretendard-Regular';
                 line-height: 2.5;
                 text-align: center;
 
@@ -242,13 +235,14 @@ export default {
                 p {
                     font-size: 3.5rem;
                     font-weight: 500;
-                    font-family: "Be Vietnam Pro", sans-serif;
+                    font-family: 'Pretendard-Regular';
                     color: white;
                     &:first-child {
                         margin-bottom: 9px;
                     }
                     &:last-child {
                         font-size: 0.9rem;
+                        font-family: 'Pretendard-Regular';
                     }
                 }
             }
@@ -258,7 +252,7 @@ export default {
                 height: 60%;
 
                 img {
-                    width: 168px;
+                  
                     height: 160px;
                 }
             }
@@ -284,17 +278,17 @@ export default {
                     p {
                         line-height: 1.5;
                         color: white;
+                        font-family: 'Pretendard-Regular';
 
                         &:first-child {
                             font-size: 1rem;
                             font-weight: 300;
-                            font-family: "Noto Sans KR", sans-serif;
                             color: #799ed0;
                         }
                         &:last-child {
                             font-size: 1rem;
                             font-weight: 200;
-                            font-family: "Poppins", sans-serif;
+                        
                         }
                     }
                 }
@@ -311,7 +305,7 @@ export default {
             width: calc(100% - 70px);
             height: 35%;
             padding: 0 35px;
-            font-family: 'Noto Sans KR', sans-serif;
+            font-family: 'Pretendard-Regular', sans-serif;
             p {
                 font-weight: 400;
                 font-size: 0.8rem;
@@ -367,7 +361,7 @@ export default {
                     height: 100%;
                     p {
                         color: whitesmoke;
-                        font-family: "Poppins", sans-serif;
+                        font-family: 'Pretendard-Regular', sans-serif;
                         text-align: center;
 
                         &.time {

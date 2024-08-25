@@ -18,7 +18,7 @@
   <style lang="scss" scoped>
   @import "../scss/main.scss";
 
-  .warp {
+  .wrap {
     @include center;
     width: 100%;
     height: 100vh;
